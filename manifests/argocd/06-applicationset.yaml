@@ -7,7 +7,7 @@ spec:
   generators:
   - git:
       repoURL: 'https://github.com/avinashjaingit/avinash_argocd_practics' # Placeholder
-      revision: HEAD
+      revision: master
       directories:
       - path: apps/*
   template:
@@ -17,7 +17,7 @@ spec:
       project: default
       source:
         repoURL: 'https://github.com/avinashjaingit/avinash_argocd_practics' # Placeholder
-        targetRevision: HEAD
+        targetRevision: master
         path: '{{path}}'
       destination:
         server: https://kubernetes.default.svc
