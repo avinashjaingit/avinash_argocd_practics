@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+data:
+  argocdUrl: "https://your-argocd-domain.com"
+  
+  service.webhook.googlechat: |
+    url: $googlechat-webhook-url
+    headers:
+    - name: Content-Type
+      value: application/json
+
+  template.app-sync-failed: |
+    webhook:
+      googlechat:
+        method: POST
+        body: |
+          {
+            "cardsV2": [{
+              "cardId": "sync-failed",
+              "card": {
+                "header": {
+                  "title": "Argo CD Notification",
+                  "subtitle": "Sync Failed: {{.app.metadata.name}}",
+                  "imageUrl": "https://raw.githubusercontent.com/argoproj/argo-cd/master/assets/argo-cd-logo.png"
+                },
+                "sections": [{
+                  "widgets": [
+                    {
+                      "textParagraph": { "text": "<b>Application:</b> {{.app.metadata.name}}<br><b>Status:</b> Sync Failed" }
+                    },
+                    {
+                      "buttonList": {
+                        "buttons": [{
+                          "text": "VIEW APPLICATION",
+                          "onClick": { "openLink": { "url": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}" } }
+                        }]
+                      }
+                    }
+                  ]
+                }]
+              }
+            }]
+          }
+
+  template.app-unhealthy: |
+    webhook:
+      googlechat:
+        method: POST
+        body: |
+          {
+            "cardsV2": [{
+              "cardId": "app-unhealthy",
+              "card": {
+                "header": {
+                  "title": "Argo CD Notification",
+                  "subtitle": "App Unhealthy: {{.app.metadata.name}}",
+                  "imageUrl": "https://raw.githubusercontent.com/argoproj/argo-cd/master/assets/argo-cd-logo.png"
+                },
+                "sections": [{
+                  "widgets": [
+                    {
+                      "textParagraph": { "text": "<b>Application:</b> {{.app.metadata.name}}<br><b>Status:</b> Unhealthy" }
+                    },
+                    {
+                      "buttonList": {
+                        "buttons": [{
+                          "text": "VIEW APPLICATION",
+                          "onClick": { "openLink": { "url": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}" } }
+                        }]
+                      }
+                    }
+                  ]
+                }]
+              }
+            }]
+          }
+
+  trigger.on-sync-failed: |
+    - description: Application sync failed
+      oncePer: .app.status.sync.revision
+      send: [app-sync-failed]
+      when: app.status.sync.status == 'Failed'
+
+  trigger.on-health-degraded: |
+    - description: Application health degraded
+      send: [app-unhealthy]
+      when: app.status.health.status == 'Degraded'

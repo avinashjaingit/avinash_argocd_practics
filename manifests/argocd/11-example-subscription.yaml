@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: my-app
+  namespace: argocd
+  annotations:
+    # Subscribe to sync failures
+    notifications.argoproj.io/subscribe.on-sync-failed.googlechat: ""
+    # Subscribe to health degradation
+    notifications.argoproj.io/subscribe.on-health-degraded.googlechat: ""
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps.git
+    targetRevision: HEAD
+    path: guestbook
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: guestbook

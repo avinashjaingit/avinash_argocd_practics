@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-cm
+    app.kubernetes.io/part-of: argocd
+
+# this configmap is watched by the Argo CD server; it must carry the
+# "app.kubernetes.io/name=argocd-cm" label or the informer cache will
+# ignore it leading to "configmap \"argocd-cm\" not found" errors.
+data:
+  # local user account for read-only access
+  accounts.developer: apiKey, login
+  # bcrypt-hashed password (generate with `argocd account hash-password`)
+  account.developer.password: $2a$12$REPLACE_WITH_HASH
